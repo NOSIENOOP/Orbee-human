@@ -1,0 +1,138 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbee Ummair Simulator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      overflow: hidden;
+      font-family: sans-serif;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #dff6ff;
+      touch-action: none;
+    }
+    .controls {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .btn {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      font-size: 24px;
+      text-align: center;
+      line-height: 60px;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="orbeeCanvas" width="800" height="600"></canvas>
+  <div class="controls">
+    <div class="btn" id="left">◀</div>
+    <div class="btn" id="up">▲</div>
+    <div class="btn" id="right">▶</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('orbeeCanvas');
+    const ctx = canvas.getContext('2d');function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let orbee = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: 50,
+  dx: 0,
+  dy: 0,
+  gravity: 0.5,
+  bounce: 0.7
+};
+
+const keys = {
+  left: false,
+  right: false,
+  up: false
+};
+
+document.getElementById('left').ontouchstart = () => keys.left = true;
+document.getElementById('left').ontouchend = () => keys.left = false;
+document.getElementById('right').ontouchstart = () => keys.right = true;
+document.getElementById('right').ontouchend = () => keys.right = false;
+document.getElementById('up').ontouchstart = () => keys.up = true;
+document.getElementById('up').ontouchend = () => keys.up = false;
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') keys.left = true;
+  if (e.key === 'ArrowRight') keys.right = true;
+  if (e.key === 'ArrowUp') keys.up = true;
+});
+window.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft') keys.left = false;
+  if (e.key === 'ArrowRight') keys.right = false;
+  if (e.key === 'ArrowUp') keys.up = false;
+});
+
+function update() {
+  if (keys.left) orbee.dx = -5;
+  if (keys.right) orbee.dx = 5;
+  if (keys.up && orbee.y + orbee.radius >= canvas.height) orbee.dy = -12;
+
+  orbee.dy += orbee.gravity;
+  orbee.x += orbee.dx;
+  orbee.y += orbee.dy;
+
+  // Bounce off floor
+  if (orbee.y + orbee.radius > canvas.height) {
+    orbee.y = canvas.height - orbee.radius;
+    orbee.dy *= -orbee.bounce;
+  }
+
+  // Bounce off walls
+  if (orbee.x - orbee.radius < 0 || orbee.x + orbee.radius > canvas.width) {
+    orbee.dx *= -orbee.bounce;
+    orbee.x = Math.max(orbee.radius, Math.min(canvas.width - orbee.radius, orbee.x));
+  }
+
+  // Friction
+  orbee.dx *= 0.95;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.arc(orbee.x, orbee.y, orbee.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.strokeStyle = '#aaa';
+  ctx.stroke();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+  </script>
+</body>
+  </html>
